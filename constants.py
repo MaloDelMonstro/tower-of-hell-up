@@ -4,7 +4,7 @@ TITLE = "ВЕРТИКАЛЬНЫЙ ПОДЪЁМ"
 RECORD_FILE = "record.txt"
 
 DIFFICULTY_SETTINGS = {
-    "easy":    (0.5, 17, 250),
+    "easy":    (0.5, 16, 250),
     "medium":  (0.8, 14, 200),
     "hard":    (1.0, 12, 100)
 }
