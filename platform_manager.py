@@ -1,54 +1,41 @@
-import random
 import arcade
+import random
 from constants import (
     PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX,
     PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX,
     PLATFORM_COLOR, SCREEN_WIDTH
 )
-from vector import Vector2Int
-
 
 class PlatformManager:
     def __init__(self):
         self.platforms = arcade.SpriteList()
-        self.positions: list[Vector2Int] = []
 
     def generate_initial_platforms(self):
-        self.add_full_width_platform(150)
+        platform = arcade.SpriteSolidColor(SCREEN_WIDTH, 12, PLATFORM_COLOR)
+        platform.center_x = SCREEN_WIDTH // 2
+        platform.center_y = 150
+        self.platforms.append(platform)
 
         y = 150 + random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
         while y < 1100:
             self.add_random_platform(y)
             y += random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
 
-    def add_full_width_platform(self, y: int):
-        width = SCREEN_WIDTH
-        x = SCREEN_WIDTH // 2
-        pos = Vector2Int(x, y)
-        self.positions.append(pos)
-
-        platform = arcade.SpriteSolidColor(width, 12, PLATFORM_COLOR)
-        platform.center_x, platform.center_y = float(pos.x), float(pos.y)
-        self.platforms.append(platform)
-
-    def add_random_platform(self, y: int):
+    def add_random_platform(self, y):
         width = random.randint(PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX)
         x = random.randint(width // 2, SCREEN_WIDTH - width // 2)
-        pos = Vector2Int(x, y)
-        self.positions.append(pos)
-
         platform = arcade.SpriteSolidColor(width, 12, PLATFORM_COLOR)
-        platform.center_x, platform.center_y = float(pos.x), float(pos.y)
+        platform.center_x, platform.center_y = x, y
         self.platforms.append(platform)
 
-    def update(self, camera_bottom: float, screen_height: int):
-        last_y = self.positions[-1].y
-        while last_y < camera_bottom + screen_height + 300:
+    def update(self, player_max_y, screen_height):
+        last_platform = self.platforms[-1]
+        while last_platform.center_y < player_max_y + screen_height + 300:
             spacing = random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
-            new_y = last_y + spacing
+            new_y = last_platform.center_y + spacing
             self.add_random_platform(new_y)
-            last_y = new_y
+            last_platform = self.platforms[-1]
 
-        while self.positions and self.positions[0].y < camera_bottom - 200:
-            self.positions.pop(0)
+        cutoff = player_max_y - 800
+        while self.platforms and self.platforms[0].center_y < cutoff:
             self.platforms.pop(0)

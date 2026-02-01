@@ -1,10 +1,10 @@
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-TITLE = "ВЕРТИКАЛЬНЫЙ ПОДЪЁМ // СИСТЕМА АКТИВНА"
+TITLE = "ВЕРТИКАЛЬНЫЙ ПОДЪЁМ"
 RECORD_FILE = "record.txt"
 
 PLAYER_SPEED = 5
-PLAYER_JUMP = 14
+PLAYER_JUMP = 15
 GRAVITY = 0.8
 
 PLATFORM_SPACING_MIN = 90
