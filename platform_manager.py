@@ -6,7 +6,6 @@ from constants import (
     PLATFORM_WIDTH_MAX,
     PLATFORM_SPACING_MIN,
     PLATFORM_SPACING_MAX,
-    MAX_JUMP_HEIGHT,
     MAX_JUMP_HORIZONTAL,
     PLATFORM_COLOR
 )
@@ -21,12 +20,12 @@ class PlatformManager:
         platform.center_y = 150
         self.platforms.append(platform)
 
-        self.add_next_platform(150)
+        self.add_next_platform(150, 200)
 
-    def add_next_platform(self, reference_y):
+    def add_next_platform(self, reference_y, max_jump_height):
         vertical_gap = random.randint(
             PLATFORM_SPACING_MIN,
-            min(PLATFORM_SPACING_MAX, MAX_JUMP_HEIGHT)
+            min(PLATFORM_SPACING_MAX, max_jump_height)
         )
         new_y = reference_y + vertical_gap
 
@@ -44,9 +43,9 @@ class PlatformManager:
         platform.center_x, platform.center_y = new_x, new_y
         self.platforms.append(platform)
 
-    def update(self, player_max_y, screen_height):
+    def update(self, player_max_y, screen_height, max_jump_height):
         while self.platforms[-1].center_y < player_max_y + screen_height + 300:
-            self.add_next_platform(self.platforms[-1].center_y)
+            self.add_next_platform(self.platforms[-1].center_y, max_jump_height)
 
         cutoff = player_max_y - 800
         while self.platforms and self.platforms[0].center_y < cutoff:

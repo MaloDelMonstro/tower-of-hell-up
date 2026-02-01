@@ -4,6 +4,7 @@ from constants import *
 from player import Player
 from platform_manager import PlatformManager
 from utils import load_record, save_record
+from pause import Pause
 from vector import Vector2
 
 
@@ -12,27 +13,37 @@ class Game(arcade.View):
         super().__init__()
         self.camera = camera.Camera2D()
         self.gui_camera = camera.Camera2D()
+        self.difficulty = DEFAULT_DIFFICULTY
+        self.current_gravity = DIFFICULTY_SETTINGS[DEFAULT_DIFFICULTY][0]
+        self.current_jump = DIFFICULTY_SETTINGS[DEFAULT_DIFFICULTY][1]
+        self.current_max_jump_height = DIFFICULTY_SETTINGS[DEFAULT_DIFFICULTY][2]
+
+    def set_difficulty(self, difficulty):
+        self.difficulty = difficulty
+        self.current_gravity, self.current_jump, self.current_max_jump_height = DIFFICULTY_SETTINGS[difficulty]
+        self.platform_manager = PlatformManager()
+        self.platform_manager.generate_initial_platforms()
 
     def setup(self):
         self.game_over = False
         self.max_height = 0.0
         self.scan_line_y = 0.0
-
         self.player = Player()
-
         self.platform_manager = PlatformManager()
         self.platform_manager.generate_initial_platforms()
-
         self.camera.position = (400.0, 200.0)
         self.gui_camera.position = (400.0, 300.0)
-
         self.record = load_record()
 
     def on_update(self, delta_time):
         if self.game_over:
             return
 
-        self.player.update(self.platform_manager.platforms)
+        self.player.update(
+            platforms=self.platform_manager.platforms,
+            gravity=self.current_gravity,
+            jump_power=self.current_jump
+        )
 
         if self.player.center_y > self.max_height:
             self.max_height = self.player.center_y
@@ -41,7 +52,11 @@ class Game(arcade.View):
                 self.record = current_m
                 save_record(self.record)
 
-        self.platform_manager.update(self.max_height, SCREEN_HEIGHT)
+        self.platform_manager.update(
+            self.max_height,
+            SCREEN_HEIGHT,
+            self.current_max_jump_height
+        )
 
         curr_x, curr_y = self.camera.position
         target_x = self.player.center_x
@@ -62,7 +77,6 @@ class Game(arcade.View):
         self.platform_manager.platforms.draw()
 
         p = self.player
-
         body_l = p.center_x - p.width / 2
         body_r = p.center_x + p.width / 2
         body_b = p.center_y - p.height / 2
@@ -79,11 +93,7 @@ class Game(arcade.View):
         self.gui_camera.use()
 
         scan_y = self.scan_line_y - SCREEN_HEIGHT
-        arcade.draw_lrbt_rectangle_filled(
-            0, SCREEN_WIDTH,
-            scan_y - 1, scan_y + 1,
-            (0, 100, 0, 80)
-        )
+        arcade.draw_lrbt_rectangle_filled(0, SCREEN_WIDTH, scan_y - 1, scan_y + 1, (0, 100, 0, 80))
 
         height_m = int(self.max_height / METER_SCALE)
         arcade.draw_text(f"{height_m:05d} М", 20, SCREEN_HEIGHT - 40,
@@ -98,7 +108,6 @@ class Game(arcade.View):
             arcade.draw_text("R — ПЕРЕЗАПУСК", SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 20,
                              (0, 200, 50), 18, anchor_x="center", font_name="Courier New")
 
-
     def on_key_press(self, key, modifiers):
         if self.game_over:
             if key == arcade.key.R:
@@ -110,10 +119,13 @@ class Game(arcade.View):
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             self.player.move_right = True
         elif (key == arcade.key.SPACE and self.player.can_jump()) or (key == arcade.key.W and self.player.can_jump()):
-            self.player.velocity = Vector2(self.player.velocity.x, PLAYER_JUMP)
+            self.player.velocity = Vector2(self.player.velocity.x, self.current_jump)
             self.player.jumps_used += 1
         elif key == arcade.key.R:
             self.setup()
+        elif key == arcade.key.ESCAPE:
+            pause = Pause(self)
+            self.window.show_view(pause)
 
     def on_key_release(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
