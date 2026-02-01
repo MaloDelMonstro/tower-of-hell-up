@@ -98,22 +98,25 @@ class Game(arcade.View):
             arcade.draw_text("R — ПЕРЕЗАПУСК", SCREEN_WIDTH//2, SCREEN_HEIGHT//2 - 20,
                              (0, 200, 50), 18, anchor_x="center", font_name="Courier New")
 
+
     def on_key_press(self, key, modifiers):
         if self.game_over:
             if key == arcade.key.R:
                 self.setup()
             return
 
-        if key == arcade.key.LEFT:
-            self.player.velocity = Vector2(self.player.velocity.x - PLAYER_SPEED, self.player.velocity.y)
-        elif key == arcade.key.RIGHT:
-            self.player.velocity = Vector2(self.player.velocity.x + PLAYER_SPEED, self.player.velocity.y)
-        elif key == arcade.key.SPACE and self.player.can_jump():
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.player.move_left = True
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.player.move_right = True
+        elif (key == arcade.key.SPACE and self.player.can_jump()) or (key == arcade.key.W and self.player.can_jump()):
             self.player.velocity = Vector2(self.player.velocity.x, PLAYER_JUMP)
             self.player.jumps_used += 1
         elif key == arcade.key.R:
             self.setup()
 
     def on_key_release(self, key, modifiers):
-        if key in (arcade.key.LEFT, arcade.key.RIGHT):
-            self.player.velocity = Vector2(0, self.player.velocity.y)
+        if key == arcade.key.LEFT or key == arcade.key.A:
+            self.player.move_left = False
+        elif key == arcade.key.RIGHT or key == arcade.key.D:
+            self.player.move_right = False
