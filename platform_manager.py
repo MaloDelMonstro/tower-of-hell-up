@@ -1,9 +1,14 @@
 import arcade
 import random
 from constants import (
-    PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX,
-    PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX,
-    PLATFORM_COLOR, SCREEN_WIDTH
+    SCREEN_WIDTH,
+    PLATFORM_WIDTH_MIN,
+    PLATFORM_WIDTH_MAX,
+    PLATFORM_SPACING_MIN,
+    PLATFORM_SPACING_MAX,
+    MAX_JUMP_HEIGHT,
+    MAX_JUMP_HORIZONTAL,
+    PLATFORM_COLOR
 )
 
 class PlatformManager:
@@ -16,25 +21,32 @@ class PlatformManager:
         platform.center_y = 150
         self.platforms.append(platform)
 
-        y = 150 + random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
-        while y < 1100:
-            self.add_random_platform(y)
-            y += random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
+        self.add_next_platform(150)
 
-    def add_random_platform(self, y):
+    def add_next_platform(self, reference_y):
+        vertical_gap = random.randint(
+            PLATFORM_SPACING_MIN,
+            min(PLATFORM_SPACING_MAX, MAX_JUMP_HEIGHT)
+        )
+        new_y = reference_y + vertical_gap
+
+        last_platform = self.platforms[-1]
+        max_offset = min(MAX_JUMP_HORIZONTAL, SCREEN_WIDTH // 2 - PLATFORM_WIDTH_MIN // 2)
+        horizontal_offset = random.randint(-max_offset, max_offset)
+        new_x = last_platform.center_x + horizontal_offset
+
+        min_x = PLATFORM_WIDTH_MIN // 2
+        max_x = SCREEN_WIDTH - PLATFORM_WIDTH_MIN // 2
+        new_x = max(min_x, min(max_x, new_x))
+
         width = random.randint(PLATFORM_WIDTH_MIN, PLATFORM_WIDTH_MAX)
-        x = random.randint(width // 2, SCREEN_WIDTH - width // 2)
         platform = arcade.SpriteSolidColor(width, 12, PLATFORM_COLOR)
-        platform.center_x, platform.center_y = x, y
+        platform.center_x, platform.center_y = new_x, new_y
         self.platforms.append(platform)
 
     def update(self, player_max_y, screen_height):
-        last_platform = self.platforms[-1]
-        while last_platform.center_y < player_max_y + screen_height + 300:
-            spacing = random.randint(PLATFORM_SPACING_MIN, PLATFORM_SPACING_MAX)
-            new_y = last_platform.center_y + spacing
-            self.add_random_platform(new_y)
-            last_platform = self.platforms[-1]
+        while self.platforms[-1].center_y < player_max_y + screen_height + 300:
+            self.add_next_platform(self.platforms[-1].center_y)
 
         cutoff = player_max_y - 800
         while self.platforms and self.platforms[0].center_y < cutoff:
