@@ -1,62 +1,67 @@
 from vector import Vector2
+import arcade
 
 class Player:
-    def __init__(self):
-        self.center_x = 400.0
-        self.center_y = 200.0
-        self.width = 20
-        self.height = 30
-        self.velocity = Vector2.zero()
-        self.jumps_used = 0
-        self.max_jumps = 2
-        self.on_ground = False
-        self.move_left = False
-        self.move_right = False
+    def __init__(self) -> None:
+        self._center_x = 400.0
+        self._center_y = 200.0
+        self._width = 20
+        self._height = 30
+        self._velocity = Vector2.zero()
+        self._jumps_used = 0
+        self._max_jumps = 2
+        self._on_ground = False
+        self._move_left = False
+        self._move_right = False
 
     @property
-    def left(self): return self.center_x - self.width / 2
+    def left(self) -> float:
+        return self._center_x - self._width / 2
     @property
-    def right(self): return self.center_x + self.width / 2
+    def right(self) -> float:
+        return self._center_x + self._width / 2
     @property
-    def bottom(self): return self.center_y - self.height / 2
+    def bottom(self) -> float:
+        return self._center_y - self._height / 2
     @property
-    def top(self): return self.center_y + self.height / 2
+    def top(self) -> float:
+        return self._center_y + self._height / 2
 
-    def reset_jump(self):
-        self.jumps_used = 0
-        self.on_ground = True
+    def reset_jump(self) -> None:
+        self._jumps_used = 0
+        self._on_ground = True
 
-    def can_jump(self):
-        return self.jumps_used < self.max_jumps
+    def can_jump(self) -> int:
+        return self._jumps_used < self._max_jumps
 
-    def update(self, platforms, gravity, jump_power):
+    def update(self, platforms: arcade.SpriteList, gravity: float, jump_power: int) -> None:
         move_x = 0
-        if self.move_left:
+        if self._move_left:
             move_x -= 5
-        if self.move_right:
+        if self._move_right:
             move_x += 5
-        self.center_x += move_x
+        self._center_x += move_x
 
         if self.left < 0:
-            self.center_x = self.width / 2
+            self._center_x = self._width / 2
         elif self.right > 800:
-            self.center_x = 800 - self.width / 2
+            self._center_x = 800 - self._width / 2
 
-        self.velocity = Vector2(self.velocity.x, self.velocity.y - gravity)
-        self.center_y += self.velocity.y
+        self._velocity = Vector2(self._velocity.x, self._velocity.y - gravity)
+        self._center_y += self._velocity.y
 
         landed = False
         for platform in platforms:
-            if (self.velocity.y < 0 and
+            if (self._velocity.y < 0 and
                 self.right > platform.left and
                 self.left < platform.right and
-                    self.bottom <= platform.top <= self.bottom - self.velocity.y):
+                    self.bottom <= platform.top <= self.bottom - self._velocity.y):
 
-                self.center_y = platform.top + self.height / 2
-                self.velocity = Vector2(self.velocity.x, 0.0)
+                self._center_y = platform.top + self._height / 2
+                self._velocity = Vector2(self._velocity.x, 0.0)
                 self.reset_jump()
                 landed = True
                 break
 
         if not landed:
-            self.on_ground = False
+            self._on_ground = False

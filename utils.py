@@ -10,7 +10,7 @@ def load_record() -> int:
             return 0
     return 0
 
-def save_record(value: int):
+def save_record(value: int) -> None:
     try:
         with open(RECORD_FILE, "w") as f:
             f.write(str(value))
